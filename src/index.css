@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer base {
+     :root {
+        --primary: 215 92% 62%;
+        --primary-dark: 225 7% 11%;
+        --primary-light: 0 0% 96%;
+        --primary-light-blue: 246 98% 98%;
+        --white: 0 0% 100%;
+        --secondary-dark: 220 1% 47%;
+        --secondary-light: 240 1% 74%;
+        /* --secondary-light: 214 23% 80%; */
+        /* --secondary-light: 0 1% 74%; */
+        --attention: 43 100% 52%;
+        --attention-light: 43 100% 95%;
+        --error: 5 74% 42%;
+        --error-light: 8 53% 94%;
+        --error-lighter: 0 100% 65%;
+        --info: 217 79% 52%;
+        --info-light: 218 76% 95%;
+        --success: 133 74% 42%;
+        --success-light: 135 53% 94%;
+        --warning: 22 85% 56%;
+        --warning-light: 22 83% 95%;
+        --sidebar: 215 24% 26%;
+        --sidebar-hover: 215 29% 16%;
+        --sidebar-active: 256 97% 64%;
+        --disabled: 0 0% 95%;
+        --disabled-stroke: 180 1% 82%;
+        --stroke: 0 0% 88%;
+        /* --stroke: 240 2% 91%; */
+        --black: 0 0% 0%;
+        --prefix: 216 33% 97%;
+        --layout: 225 14% 95%;
+        --auth: 217 21% 24%;
+        --auth-dark: 217 21% 21%;
+        --auth-stroke: 217 14% 30%;
+        --label: 220 3% 40%;
+        --dialog-title: 220 2% 29%;
+        /* ShadcnUI built-in
+        TODO: Remove or replace
+    */
+        --secondary: 0 0% 96.1%;
+        --destructive: 0 81% 54%;
+        --ring: 0 0% 3.9%;
+        --radius: 0.5rem;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-stroke;
+    }
+    body {
+        @apply bg-primary-light-blue text-primary-dark;
+    }
+    input[type='number']::-webkit-inner-spin-button,
+    input[type='number']::-webkit-outer-spin-button {
+        @apply appearance-none m-0;
+    }
+     ::-webkit-scrollbar {
+        @apply w-2 h-2;
+    }
+     ::-webkit-scrollbar-track {
+        @apply bg-layout rounded;
+    }
+     ::-webkit-scrollbar-thumb {
+        @apply bg-secondary-light rounded;
+    }
+     ::-webkit-scrollbar-thumb:hover {
+        @apply bg-secondary-dark;
+    }
+}
+
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../fonts/poppins-v15-latin-regular.eot');
+    /* IE9 Compat Modes */
+    src: local(''), url('../fonts/poppins-v15-latin-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+    url('../fonts/poppins-v15-latin-regular.woff2') format('woff2'), /* Super Modern Browsers */
+    url('../fonts/poppins-v15-latin-regular.woff') format('woff'), /* Modern Browsers */
+    url('../fonts/poppins-v15-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+    url('../fonts/poppins-v15-latin-regular.svg#Poppins') format('svg');
+    /* Legacy iOS */
+}

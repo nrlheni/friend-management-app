@@ -31,3 +31,7 @@ npm run dev
 - **Blocks**: View list of all blocks, and block users.
 - **Mutual Friends**: View mutual friends between users.
 - **User Info**: View additional information about users, including profile details.
+
+
+## Notes
+- You need to refresh page or move to other tab to refresh the data after do some actions (accept, reject, block)

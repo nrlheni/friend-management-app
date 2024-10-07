@@ -16,17 +16,17 @@ export const Card = () => {
     const [cookies] = useCookies(['userId', 'userName', 'userEmail']);
     const { toast } = useToast();
 
+    const fetchFriendRequests = async () => {
+        try {
+            const response = await getFriendRequestList({ email: cookies.userEmail});
+            setFriendRequests(response.data.requests);
+        } catch (err) {
+            toast({
+                description: "Something Wrong.",
+            });
+        }
+    };
     useEffect(() => {
-        const fetchFriendRequests = async () => {
-            try {
-                const response = await getFriendRequestList({ email: cookies.userEmail});
-                setFriendRequests(response.data.requests);
-            } catch (err) {
-                toast({
-                    description: "Something Wrong.",
-                });
-            }
-        };
 
         fetchFriendRequests();
     }, []);
@@ -57,7 +57,7 @@ export const Card = () => {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary-dark" size={20} />
                 </div>
                 <div className="flex flex-col max-h-[50vh] overflow-y-auto p-2" style={{scrollbarGutter: 'stable'}}>
-                    <List data={filteredDataList} withDetail/>
+                    <List data={filteredDataList} withDetail />
                 </div>
             </div>
         </div>

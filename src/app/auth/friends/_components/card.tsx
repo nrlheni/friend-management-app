@@ -1,7 +1,6 @@
 import { List } from "@/app/auth/friends/_components/list";
 
-// import { Friend } from "@/app/friends/_schema/friend";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -75,6 +74,7 @@ export const Card = () => {
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-lg bg-white">
                             <DialogHeader>
+                                <DialogTitle></DialogTitle>
                                 <DialogDescription>
                                     Find someone to request a friend.
                                 </DialogDescription>

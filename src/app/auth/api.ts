@@ -44,7 +44,7 @@ export const getUserList = async (data: { email: string }) => {
 };
 
 export const getMutualList = async (emails: string[]) => {
-    const response = await fetch(`/friend/mutual?emails=${emails.join(',')}`, {
+    const response = await fetch(`/api/friend/mutual?emails=${emails.join(',')}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

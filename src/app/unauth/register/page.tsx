@@ -5,6 +5,8 @@ import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { register } from "../api";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
 
@@ -29,10 +31,22 @@ const Login = () => {
         },
     });
 
-    const onSubmit = (values: z.infer<typeof formSchema>) => {
-        console.log(values);
+    const { toast } = useToast();
 
-        window.location.href = '/login'
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        try {
+            await register(values);
+
+            toast({
+                description: "Congrats! Now you are registered. Please Log in",
+            })
+            window.location.href = '/login';
+        } catch (error) {
+            console.error(error);
+            toast({
+                title: "Something Wrong."
+            })
+        }
     };
 
     return (

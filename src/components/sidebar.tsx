@@ -2,6 +2,7 @@ import { Ban, ChevronRight, Handshake, UserPlus, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "./ui/menubar";
 import { Link, useLocation } from "react-router-dom";
+import { useCookies } from "react-cookie";
 
 const routes = [
     // {
@@ -28,6 +29,18 @@ const routes = [
 
 export const Sidebar = () => {
     const location = useLocation();
+
+    const [cookies, removeCookie] = useCookies(['userId', 'userName', 'userEmail']);
+
+    const userName = cookies.userName
+
+    const handleLogout = () => {
+        removeCookie('userId', {path: '/friend/list' });
+        removeCookie('userName', {path: '/friend/list' });
+        removeCookie('userEmail', {path: '/frind/list' });
+
+        window.location.href = '/login';
+    }
 
     return (
         <div className="w-60 min-h-screen bg-white p-6 shadow-sm flex flex-col justify-between">
@@ -66,20 +79,18 @@ export const Sidebar = () => {
                             <div className="w-full flex flex-row items-center justify-between rounded-md px-2 hover:cursor-pointer">
                                 <div className="w-full flex flex-row gap-2 items-center">
                                     <Avatar className="size-8">
-                                        <AvatarImage src="https://github.com/johndoe.png" alt="@shadcn" />
-                                        <AvatarFallback>CN</AvatarFallback>
+                                        <AvatarImage src="" alt="@shadcn" />
+                                        <AvatarFallback className="rounded-full bg-sidebar-active text-white capitalize">{userName.charAt(0)}</AvatarFallback>
                                     </Avatar>
-                                    <div className="text-xs group-hover:text-primary-light font-medium">John Doe</div>
+                                    <div className="text-xs group-hover:text-primary-light font-medium capitalize">{userName}</div>
                                 </div>
                                 <ChevronRight size={16} className="text-secondary-dark ms-auto" />
                             </div>
                         </MenubarTrigger>
                         <MenubarContent className="size-10">
-                            <Link to={"/login"} >
-                                <MenubarItem className="w-full text-xs my-auto cursor-pointer hover:bg-primary-light">
+                                <MenubarItem onClick={handleLogout} className="w-full text-xs my-auto cursor-pointer hover:bg-primary-light">
                                     Log Out
                                 </MenubarItem>
-                            </Link>
                         </MenubarContent>
                     </MenubarMenu>
                 </Menubar>

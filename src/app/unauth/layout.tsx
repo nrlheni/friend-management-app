@@ -8,7 +8,7 @@ const UnauthLayout = ({ children }: UnauthLayoutProps) => {
 
     return (
         <div className="flex min-h-screen w-full">
-            <div className="w-1/3 bg-white rounded-xl shadow my-8 mx-auto">
+            <div className="md:w-1/3 sm:w-1/2 bg-white rounded-xl shadow my-8 mx-auto">
                 {children}
             </div>
         </div>

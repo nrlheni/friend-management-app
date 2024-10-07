@@ -1,13 +1,19 @@
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Link } from "react-router-dom";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Input } from "@/components/ui/input";
+
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { login } from "../api";
+
+import { useCookies } from 'react-cookie';
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
-    // 1. Define your form schema
+
     const formSchema = z.object({
         email: z.string().min(1, {
             message: "Email is required.",
@@ -17,7 +23,6 @@ const Login = () => {
         }),
     });
 
-    // 2. Define your form
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -26,10 +31,33 @@ const Login = () => {
         },
     });
 
-    const onSubmit = (values: z.infer<typeof formSchema>) => {
-        console.log(values);
+    const [cookies, setCookie] = useCookies(['userId', 'userName', 'userEmail']);
+    const { toast } = useToast();
 
-        window.location.href = '/friend/list'
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        try {
+            const response = await login(values);
+
+            if (!cookies.userId) {
+                setCookie('userId', response.data.id.toString(), {path: '/friend/list'});
+                setCookie('userName', response.data.name, {path: '/friend/list'});
+                setCookie('userEmail', response.data.email, {path: '/friend/list'});
+            }
+
+            toast({
+                description: "Logged In Successfully",
+            });
+
+            setTimeout(() => {
+                window.location.href = '/friend/list';
+            }, 3000);
+
+        } catch (error) {
+            console.error(error);
+            toast({
+                description: "Something Wrong.",
+            });
+        }
     };
 
     return (

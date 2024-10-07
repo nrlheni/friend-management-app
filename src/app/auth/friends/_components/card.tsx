@@ -1,30 +1,68 @@
-import { List } from "@/app/auth/_components/list";
+import { List } from "@/app/auth/friends/_components/list";
 
 // import { Friend } from "@/app/friends/_schema/friend";
-import Data from '@/assets/data.json'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Friend } from "../_schema/friend";
+import { getFriendList, getUserList } from "../../api";
+import { useToast } from "@/hooks/use-toast";
+import { useCookies } from "react-cookie";
 
 export const Card = () => {
     const [searchList, setSearchList] = useState("");
     const [searchUser, setSearchUser] = useState("");
+    const [friends, setFriends] = useState<Friend[]>([]);
+    const [filteredDataUser, setFilteredDataUser] = useState<Friend[]>([]);
 
-    const filteredDataList = Data.filter((friend) =>
+    const [cookies] = useCookies(['userId', 'userName', 'userEmail']);
+    const { toast } = useToast();
+
+    useEffect(() => {
+        const fetchFriends = async () => {
+            try {
+                const response = await getFriendList({ email: cookies.userEmail});
+                setFriends(response.data.friends);
+            } catch (err) {
+                toast({
+                    description: "Something Wrong.",
+                });
+            }
+        };
+
+        fetchFriends();
+    }, []);
+
+    const filteredDataList = friends.filter((friend) =>
         friend.name.toLowerCase().includes(searchList.toLowerCase()) ||
         friend.email.toLowerCase().includes(searchList.toLowerCase())
     );
-    const filteredDataUser = Data.filter((friend) =>
-        friend.email.toLowerCase().includes(searchUser.toLowerCase())
-    );
+
+    const handleSearchUser = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            try {
+                const response = await getUserList({email: searchUser});
+                const filtered = response.data.filter((friend: Friend) =>
+                    friend.email.toLowerCase().includes(searchUser.toLowerCase())
+                );
+                setFilteredDataUser(filtered);
+            } catch (err) {
+                toast({
+                    description: "Failed to fetch user list.",
+                });
+            }
+        }
+    };
+
+    const handleSearchUserChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchUser(event.target.value);
+    };
 
     const handleSearchList = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchList(event.target.value);
     };
-    const handleSearchUser = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchUser(event.target.value);
-    };
+
     return (
         <div className="w-full max-h-screen bg-white rounded-xl p-8 pe-8">
             <div className="flex flex-col gap-2">
@@ -46,13 +84,14 @@ export const Card = () => {
                                     placeholder="Search by email"
                                     value={searchUser}
                                     className="pl-10"
-                                    onChange={handleSearchUser}
+                                    onChange={handleSearchUserChange}
+                                    onKeyDown={handleSearchUser}
                                 />
 
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary-dark" size={20} />
                             </div>
                             <div className="flex flex-col max-h-[40vh] overflow-y-auto p-2" style={{scrollbarGutter: 'stable'}}>
-                                <List data={filteredDataUser} action="request" withDetail={false}/>
+                                <List data={filteredDataUser} type="user" withDetail/>
                             </div>
                         </DialogContent>
                     </Dialog>
@@ -69,7 +108,7 @@ export const Card = () => {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary-dark" size={20} />
                 </div>
                 <div className="flex flex-col max-h-[50vh] overflow-y-auto p-2" style={{scrollbarGutter: 'stable'}}>
-                    <List data={filteredDataList} action="block" withDetail/>
+                    <List data={filteredDataList} type="friend" withDetail/>
                 </div>
             </div>
         </div>

@@ -34,4 +34,5 @@ npm run dev
 
 
 ## Notes
-- You need to refresh page or move to other tab to refresh the data after do some actions (accept, reject, block)
+- You need to move to other tab to refresh the data after do some actions (accept, reject, block)
+- If you find the page can't be loaded, then just restart the server and open the url that provided in console/terminal

@@ -11,20 +11,14 @@ Make sure you have the following installed on your machine:
 
 Follow these steps to run the project locally:
 
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/your-repo/friends-management-app.git
-cd friends-management-app
-```
-### 2. Install Dependencies
+### 1. Install Dependencies
 
 ```bash
 npm install
 ```
-### 3. Run the backend service
+### 2. Run the backend service
 
-### 4. Start Development Server
+### 3. Start Development Server
 
 ```bash
 npm run dev

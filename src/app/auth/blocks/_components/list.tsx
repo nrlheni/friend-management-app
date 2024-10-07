@@ -1,8 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Ban, Info } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Friend } from "../_schema/friend";
+import { useCookies } from "react-cookie";
+import { getMutualList } from "../../api";
 
 interface ListProps {
     data: Friend[];
@@ -10,6 +12,9 @@ interface ListProps {
 }
 
 export const List = ({ data, withDetail }: ListProps) => {
+    const [mutuals, setMutuals] = useState<Friend[]>([]);
+
+    const [cookies] = useCookies(['userId', 'userName', 'userEmail']);
 
     const getInitials = useMemo(() => (name: string) => {
         if (!name) return '';
@@ -25,6 +30,15 @@ export const List = ({ data, withDetail }: ListProps) => {
         const colors = ['#FF5733', '#33FF57', '#3357FF', '#F39C12', '#9B59B6'];
         return colors[Math.floor(Math.random() * colors.length)];
     }, []);
+
+    const fetchMutuals = async (friendEmail: string) => {
+        try {
+            const response = await getMutualList([cookies.userEmail, friendEmail]);
+            setMutuals(response.data.friends);
+        } catch (err) {
+            throw new Error('failed to fetch mutuals');
+        }
+    };
 
 
     return (
@@ -55,7 +69,7 @@ export const List = ({ data, withDetail }: ListProps) => {
                                 {withDetail && (
                                     <Dialog>
                                         <DialogTrigger>
-                                            <Info size={20} className="text-primary-dark hover:cursor-pointer hover:scale-110 me-2" />
+                                            <Info size={20} onClick={() => fetchMutuals(friend.email)} className="text-primary-dark hover:cursor-pointer hover:scale-110 me-2" />
                                         </DialogTrigger>
                                         <DialogContent className="sm:max-w-lg bg-white">
                                             <div className="w-full flex flex-col gap-2 items-center justify-start">
@@ -74,12 +88,14 @@ export const List = ({ data, withDetail }: ListProps) => {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col gap-1 border border-secondary-light rounded-lg">
-                                                <div className="flex justify-start text-xs font-semibold px-3 mt-2">You're both friends with:</div>
-                                                <div className="flex flex-col max-h-[50vh] overflow-y-auto px-2" style={{scrollbarGutter: 'stable'}}>
-                                                    <List data={data} withDetail={false} />
+                                            {mutuals.length > 0 && (
+                                                <div className="flex flex-col gap-1 border border-secondary-light rounded-lg py-2">
+                                                    <div className="flex justify-start text-xs font-semibold px-3 mt-2">You're both friends with:</div>
+                                                    <div className="flex flex-col max-h-[50vh] overflow-y-auto px-2" style={{scrollbarGutter: 'stable'}}>
+                                                        <List data={mutuals} withDetail={false} />
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )}
                                         </DialogContent>
                                     </Dialog>
                                 )}

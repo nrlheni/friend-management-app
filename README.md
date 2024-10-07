@@ -26,11 +26,11 @@ npm run dev
 
 ## Features
 
-- **Friend List**: View a list of all your friends and see profile details.
-- **Friend Request**: Send, accept, or decline friend requests.
-- **Blocks**: View list of all blocks, and block users.
-- **Mutual Friends**: View mutual friends between users.
-- **User Info**: View additional information about users, including profile details.
+- **Friend List**: View a list of all your friends and see profile details. In this page you can add/create friend request to anyone (users)
+- **Friend Request**: View a list of all the friend requests from another user. You can also Accept or decline the friend requests.
+- **Blocks**: View list of all blocks.
+- **Mutual Friends**: View mutual friends between users. This feature can found in detail of user
+- **User Info**: View information about users, including mutuals, and block action.
 
 
 ## Notes

@@ -40,7 +40,10 @@ const Login = () => {
             toast({
                 description: "Congrats! Now you are registered. Please Log in",
             })
-            window.location.href = '/login';
+
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 3000);
         } catch (error) {
             console.error(error);
             toast({

@@ -2,10 +2,11 @@ import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogTitle, 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Ban, CircleCheck, CircleX, Info } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FriendRequest } from "../_schema/friend-request";
 import { useToast } from "@/hooks/use-toast";
-import { AcceptRejectRequest } from "../../api";
+import { getMutualList, BlockFriend, AcceptRejectRequest } from "../../api";
+import { useCookies } from "react-cookie";
 
 interface ListProps {
     data: FriendRequest[];
@@ -13,7 +14,9 @@ interface ListProps {
 }
 
 export const List = ({ data, withDetail }: ListProps) => {
-    const [blockedFriends, setBlockedFriends] = useState<Map<number, boolean>>(new Map());
+    const [mutuals, setMutuals] = useState<FriendRequest[]>([]);
+
+    const [cookies] = useCookies(['userId', 'userName', 'userEmail']);
     const { toast } = useToast();
 
     const getInitials = useMemo(() => (name: string) => {
@@ -31,8 +34,28 @@ export const List = ({ data, withDetail }: ListProps) => {
         return colors[Math.floor(Math.random() * colors.length)];
     }, []);
 
-    const toggleBlock = (friendId: number) => {
-        setBlockedFriends(prev => new Map(prev).set(friendId, !prev.get(friendId)));
+    const handleBlock = async (friendName: string, friendEmail: string) => {
+        try {
+            await BlockFriend({ requester: cookies.userEmail, block: friendEmail });
+
+            toast({
+                description: `You're blocked ${friendName}`,
+            });
+
+        } catch (error) {
+            toast({
+                description: "Failed to block",
+            });
+        }
+    };
+
+    const fetchMutuals = async (friendEmail: string) => {
+        try {
+            const response = await getMutualList([cookies.userEmail, friendEmail]);
+            setMutuals(response.data.friends);
+        } catch (err) {
+            throw new Error('failed to fetch mutuals');
+        }
     };
 
     const handleAcceptReject = async (friendRequestID: number, status: "accepted" | "rejected") => {
@@ -56,7 +79,6 @@ export const List = ({ data, withDetail }: ListProps) => {
                 </div>
             ) : (
                 data.map((friend) => {
-                    const isBlocked = blockedFriends.get(friend.id) || false;
                     const bgColor = getRandomColor();
 
                     return (
@@ -77,8 +99,12 @@ export const List = ({ data, withDetail }: ListProps) => {
                                 {withDetail && (
                                     <Dialog>
                                         <DialogTrigger>
-                                            <Info size={20} className="text-primary-dark hover:cursor-pointer hover:scale-110 me-2" />
+                                            <Info size={20} onClick={() => fetchMutuals(friend.requesterEmail)} className="text-primary-dark hover:cursor-pointer hover:scale-110 me-2" />
                                         </DialogTrigger>
+                                        <DialogHeader>
+                                            <DialogTitle></DialogTitle>
+                                            <DialogDescription></DialogDescription>
+                                        </DialogHeader>
                                         <DialogContent className="sm:max-w-lg bg-white">
                                             <div className="w-full flex flex-col gap-2 items-center justify-start">
                                                 <Avatar className="size-12">
@@ -91,44 +117,36 @@ export const List = ({ data, withDetail }: ListProps) => {
                                                     <div className="text-sm font-extrabold">{friend.requesterName}</div>
                                                     <div className="text-sm font-medium">{friend.requesterEmail}</div>
                                                     <AlertDialog>
-                                                        {!isBlocked ? (
-                                                            <AlertDialogTrigger asChild>
-                                                                <div className={`flex flex-row items-center text-sm text-white gap-1 rounded-full hover:cursor-pointer hover:scale-110 px-2 py-1 mt-2 bg-error`}>
-                                                                    <Ban size={16} />
-                                                                    <div className="text-sm font-medium">Block</div>
-                                                                </div>
-                                                            </AlertDialogTrigger>
-                                                        ) : (
-                                                            <div className={`flex flex-row items-center text-sm text-white gap-1 rounded-full px-2 py-1 mt-2 bg-secondary-dark`}>
+                                                        <AlertDialogTrigger asChild>
+                                                            <div className={`flex flex-row items-center text-sm text-white gap-1 rounded-full hover:cursor-pointer hover:scale-110 px-2 py-1 mt-2 bg-error`}>
                                                                 <Ban size={16} />
-                                                                <div className="text-sm font-medium">Blocked</div>
+                                                                <div className="text-sm font-medium">Block</div>
                                                             </div>
-                                                        )}
-
-                                                        {!isBlocked && (
-                                                            <AlertDialogContent className="fixed">
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle>Block <span>{friend.requesterName}</span>?</AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        This user will be automatically removed from your friend list.
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                    <AlertDialogAction onClick={() => toggleBlock(friend.id)}>
-                                                                        Block
-                                                                    </AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        )}
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent className="fixed">
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Block <span>{friend.requesterName}</span>?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    This user will be automatically removed from your friend list.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogAction onClick={() => handleBlock(friend.requesterName, friend.requesterEmail)}>
+                                                                    Block
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
                                                     </AlertDialog>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col gap-1 border border-secondary-light rounded-lg">
-                                                <div className="flex justify-start text-xs font-semibold px-3 mt-2">You're both friends with:</div>
-                                                <div className="flex flex-col max-h-[50vh] overflow-y-auto px-2" style={{scrollbarGutter: 'stable'}}>
-                                                    <List data={data} withDetail={false} />
+                                            {mutuals.length > 0 && (
+                                                <div className="flex flex-col gap-1 border border-secondary-light rounded-lg py-2">
+                                                    <div className="flex justify-start text-xs font-semibold px-3 mt-2">You're both friends with:</div>
+                                                    <div className="flex flex-col max-h-[50vh] overflow-y-auto px-2" style={{scrollbarGutter: 'stable'}}>
+                                                        <List data={mutuals} withDetail={false} />
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )}
                                         </DialogContent>
                                     </Dialog>
                                 )}

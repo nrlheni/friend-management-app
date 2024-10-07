@@ -20,7 +20,7 @@ export const Card = () => {
         const fetchBlocks = async () => {
             try {
                 const response = await getBlockList({ email: cookies.userEmail});
-                setBlocks(response.data.friends);
+                setBlocks(response.data);
             } catch (err) {
                 toast({
                     description: "Something Wrong.",

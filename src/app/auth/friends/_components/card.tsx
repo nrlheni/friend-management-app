@@ -3,36 +3,18 @@ import { List } from "@/app/auth/friends/_components/list";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Friend } from "../_schema/friend";
-import { getFriendList, getUserList } from "../../api";
+import { getUserList } from "../../api";
 import { useToast } from "@/hooks/use-toast";
-import { useCookies } from "react-cookie";
+import { useFriends } from "../_contexts/friend-context";
 
 export const Card = () => {
     const [searchList, setSearchList] = useState("");
     const [searchUser, setSearchUser] = useState("");
-    const [friends, setFriends] = useState<Friend[]>([]);
+    const { friends } = useFriends();
     const [filteredDataUser, setFilteredDataUser] = useState<Friend[]>([]);
-
-    const [cookies] = useCookies(['userId', 'userName', 'userEmail']);
     const { toast } = useToast();
-
-    const fetchFriends = async () => {
-        try {
-            const response = await getFriendList({ email: cookies.userEmail});
-            setFriends(response.data.friends);
-        } catch (err) {
-            toast({
-                description: "Something Wrong.",
-            });
-        }
-    };
-
-    useEffect(() => {
-
-        fetchFriends();
-    }, []);
 
     const filteredDataList = friends.filter((friend) =>
         friend.name.toLowerCase().includes(searchList.toLowerCase()) ||

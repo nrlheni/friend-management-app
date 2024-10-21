@@ -7,6 +7,7 @@ import { Friend } from "../_schema/friend";
 import { useCookies } from "react-cookie";
 import { useToast } from "@/hooks/use-toast";
 import { CreateFriendRequest, getMutualList, BlockFriend } from "../../api";
+import { useFriends } from "../_contexts/friend-context";
 
 interface ListProps {
     data: Friend[];
@@ -15,7 +16,10 @@ interface ListProps {
 }
 
 export const List = ({ data, type, withDetail }: ListProps) => {
+    const { refreshFriends } = useFriends();
     const [pendingRequests, setPendingRequests] = useState<number[]>([]);
+    const [openDetailDialog, setOpenDetailDialog] = useState(false);
+    const [openBlockAlertDialog, setOpenBlockAlertDialog] = useState(false);
     const [mutuals, setMutuals] = useState<Friend[]>([]);
 
     const [cookies] = useCookies(['userId', 'userName', 'userEmail']);
@@ -41,12 +45,15 @@ export const List = ({ data, type, withDetail }: ListProps) => {
     };
 
     const handleBlock = async (friendName: string, friendEmail: string) => {
+        setOpenBlockAlertDialog(false);
         try {
             await BlockFriend({ requester: cookies.userEmail, block: friendEmail });
-
+            setOpenDetailDialog(false);
             toast({
                 description: `You're blocked ${friendName}`,
             });
+
+            refreshFriends();
 
         } catch (error) {
             toast({
@@ -56,6 +63,7 @@ export const List = ({ data, type, withDetail }: ListProps) => {
     };
 
     const fetchMutuals = async (friendEmail: string) => {
+        setOpenDetailDialog(true);
         try {
             const response = await getMutualList([cookies.userEmail, friendEmail]);
             setMutuals(response.data.friends);
@@ -105,9 +113,9 @@ export const List = ({ data, type, withDetail }: ListProps) => {
                                     </div>
                                 </div>
                                 {withDetail && (
-                                    <Dialog>
+                                    <><Info size={20} onClick={() => fetchMutuals(friend.email)} className="text-primary-dark hover:cursor-pointer hover:scale-110 me-2" />
+                                    <Dialog open={openDetailDialog} onOpenChange={setOpenDetailDialog}>
                                         <DialogTrigger>
-                                            <Info size={20} onClick={() => fetchMutuals(friend.email)} className="text-primary-dark hover:cursor-pointer hover:scale-110 me-2" />
                                         </DialogTrigger>
                                         <DialogHeader>
                                             <DialogTitle></DialogTitle>
@@ -117,19 +125,19 @@ export const List = ({ data, type, withDetail }: ListProps) => {
                                             <div className="w-full flex flex-col gap-2 items-center justify-start">
                                                 <Avatar className="size-12">
                                                     <AvatarImage src="" alt="" />
-                                                    <AvatarFallback className="text-white" style={{backgroundColor: bgColor}}>
+                                                    <AvatarFallback className="text-white" style={{ backgroundColor: bgColor }}>
                                                         {getInitials(friend.name)}
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <div className="flex flex-col items-center justify-center">
                                                     <div className="text-sm font-extrabold">{friend.name}</div>
                                                     <div className="text-sm font-medium">{friend.email}</div>
-                                                    <AlertDialog>
+                                                    <div onClick={() => setOpenBlockAlertDialog(true)} className={`flex flex-row items-center text-sm text-white gap-1 rounded-full hover:cursor-pointer hover:scale-110 px-2 py-1 mt-2 bg-error`}>
+                                                        <Ban size={16} />
+                                                        <div className="text-sm font-medium">Block</div>
+                                                    </div>
+                                                    <AlertDialog open={openBlockAlertDialog} onOpenChange={setOpenBlockAlertDialog}>
                                                         <AlertDialogTrigger asChild>
-                                                            <div className={`flex flex-row items-center text-sm text-white gap-1 rounded-full hover:cursor-pointer hover:scale-110 px-2 py-1 mt-2 bg-error`}>
-                                                                <Ban size={16} />
-                                                                <div className="text-sm font-medium">Block</div>
-                                                            </div>
                                                         </AlertDialogTrigger>
                                                         <AlertDialogContent className="fixed">
                                                             <AlertDialogHeader>
@@ -150,13 +158,13 @@ export const List = ({ data, type, withDetail }: ListProps) => {
                                             {mutuals.length > 0 && (
                                                 <div className="flex flex-col gap-1 border border-secondary-light rounded-lg py-2">
                                                     <div className="flex justify-start text-xs font-semibold px-3 mt-2">You're both friends with:</div>
-                                                    <div className="flex flex-col max-h-[50vh] overflow-y-auto px-2" style={{scrollbarGutter: 'stable'}}>
+                                                    <div className="flex flex-col max-h-[50vh] overflow-y-auto px-2" style={{ scrollbarGutter: 'stable' }}>
                                                         <List data={mutuals} type="friend" withDetail={false} />
                                                     </div>
                                                 </div>
                                             )}
                                         </DialogContent>
-                                    </Dialog>
+                                    </Dialog></>
                                 )}
 
                                 {type === 'user' && (

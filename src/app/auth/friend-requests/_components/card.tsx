@@ -1,35 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { List } from "@/app/auth/friend-requests/_components/list";
-import { FriendRequest } from "@/app/auth/friend-requests/_schema/friend-request";
-import { getFriendRequestList } from "@/app/auth/api";
 
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { useCookies } from "react-cookie";
-import { useToast } from "@/hooks/use-toast";
+import { useFriendRequests } from "../_contexts/friend-request-context";
 
 export const Card = () => {
+    const { friendRequests } = useFriendRequests();
     const [searchList, setSearchList] = useState("");
-    const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
-
-    const [cookies] = useCookies(['userId', 'userName', 'userEmail']);
-    const { toast } = useToast();
-
-    const fetchFriendRequests = async () => {
-        try {
-            const response = await getFriendRequestList({ email: cookies.userEmail});
-            setFriendRequests(response.data.requests);
-        } catch (err) {
-            toast({
-                description: "Something Wrong.",
-            });
-        }
-    };
-    useEffect(() => {
-
-        fetchFriendRequests();
-    }, []);
 
     const filteredDataList = friendRequests?.filter((friend) =>
         (friend?.requesterName?.toLowerCase() || "").includes(searchList.toLowerCase()) ||

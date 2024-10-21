@@ -7,6 +7,7 @@ import { FriendRequest } from "../_schema/friend-request";
 import { useToast } from "@/hooks/use-toast";
 import { getMutualList, BlockFriend, AcceptRejectRequest } from "../../api";
 import { useCookies } from "react-cookie";
+import { useFriendRequests } from "../_contexts/friend-request-context";
 
 interface ListProps {
     data: FriendRequest[];
@@ -15,9 +16,12 @@ interface ListProps {
 
 export const List = ({ data, withDetail }: ListProps) => {
     const [mutuals, setMutuals] = useState<FriendRequest[]>([]);
+    const [openDetailDialog, setOpenDetailDialog] = useState(false);
+    const [openBlockAlertDialog, setOpenBlockAlertDialog] = useState(false);
 
     const [cookies] = useCookies(['userId', 'userName', 'userEmail']);
     const { toast } = useToast();
+    const { refreshFriendRequests } = useFriendRequests();
 
     const getInitials = useMemo(() => (name: string) => {
         if (!name) return '';
@@ -35,12 +39,16 @@ export const List = ({ data, withDetail }: ListProps) => {
     }, []);
 
     const handleBlock = async (friendName: string, friendEmail: string) => {
+        setOpenBlockAlertDialog(false);
         try {
             await BlockFriend({ requester: cookies.userEmail, block: friendEmail });
 
+            setOpenDetailDialog(false);
             toast({
                 description: `You're blocked ${friendName}`,
             });
+
+            refreshFriendRequests();
 
         } catch (error) {
             toast({
@@ -50,6 +58,7 @@ export const List = ({ data, withDetail }: ListProps) => {
     };
 
     const fetchMutuals = async (friendEmail: string) => {
+        setOpenDetailDialog(true);
         try {
             const response = await getMutualList([cookies.userEmail, friendEmail]);
             setMutuals(response.data.friends);
@@ -64,6 +73,8 @@ export const List = ({ data, withDetail }: ListProps) => {
             toast({
                 description: `Request ${status}`,
             });
+
+            refreshFriendRequests();
         } catch (error) {
             toast({
                 description: `Failed to ${status} request`,
@@ -97,9 +108,8 @@ export const List = ({ data, withDetail }: ListProps) => {
                                     </div>
                                 </div>
                                 {withDetail && (
-                                    <Dialog>
+                                    <><Info size={20} onClick={() => fetchMutuals(friend.requesterEmail)} className="text-primary-dark hover:cursor-pointer hover:scale-110 me-2" /><Dialog open={openDetailDialog} onOpenChange={setOpenDetailDialog}>
                                         <DialogTrigger>
-                                            <Info size={20} onClick={() => fetchMutuals(friend.requesterEmail)} className="text-primary-dark hover:cursor-pointer hover:scale-110 me-2" />
                                         </DialogTrigger>
                                         <DialogHeader>
                                             <DialogTitle></DialogTitle>
@@ -109,19 +119,21 @@ export const List = ({ data, withDetail }: ListProps) => {
                                             <div className="w-full flex flex-col gap-2 items-center justify-start">
                                                 <Avatar className="size-12">
                                                     <AvatarImage src="" alt="" />
-                                                    <AvatarFallback className="text-white" style={{backgroundColor: bgColor}}>
+                                                    <AvatarFallback className="text-white" style={{ backgroundColor: bgColor }}>
                                                         {getInitials(friend.requesterName)}
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <div className="flex flex-col items-center justify-center">
                                                     <div className="text-sm font-extrabold">{friend.requesterName}</div>
                                                     <div className="text-sm font-medium">{friend.requesterEmail}</div>
-                                                    <AlertDialog>
+                                                    <div
+                                                        onClick={()=> setOpenBlockAlertDialog(true)}
+                                                        className={`flex flex-row items-center text-sm text-white gap-1 rounded-full hover:cursor-pointer hover:scale-110 px-2 py-1 mt-2 bg-error`}>
+                                                        <Ban size={16} />
+                                                        <div className="text-sm font-medium">Block</div>
+                                                    </div>
+                                                    <AlertDialog open={openBlockAlertDialog} onOpenChange={setOpenBlockAlertDialog}>
                                                         <AlertDialogTrigger asChild>
-                                                            <div className={`flex flex-row items-center text-sm text-white gap-1 rounded-full hover:cursor-pointer hover:scale-110 px-2 py-1 mt-2 bg-error`}>
-                                                                <Ban size={16} />
-                                                                <div className="text-sm font-medium">Block</div>
-                                                            </div>
                                                         </AlertDialogTrigger>
                                                         <AlertDialogContent className="fixed">
                                                             <AlertDialogHeader>
@@ -142,13 +154,13 @@ export const List = ({ data, withDetail }: ListProps) => {
                                             {mutuals.length > 0 && (
                                                 <div className="flex flex-col gap-1 border border-secondary-light rounded-lg py-2">
                                                     <div className="flex justify-start text-xs font-semibold px-3 mt-2">You're both friends with:</div>
-                                                    <div className="flex flex-col max-h-[50vh] overflow-y-auto px-2" style={{scrollbarGutter: 'stable'}}>
+                                                    <div className="flex flex-col max-h-[50vh] overflow-y-auto px-2" style={{ scrollbarGutter: 'stable' }}>
                                                         <List data={mutuals} withDetail={false} />
                                                     </div>
                                                 </div>
                                             )}
                                         </DialogContent>
-                                    </Dialog>
+                                    </Dialog></>
                                 )}
 
                                 {friend.status === 'pending' && (

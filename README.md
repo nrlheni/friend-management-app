@@ -5,7 +5,7 @@ This is the frontend application for the Friends Management App, built using **R
 ## Prerequisites
 
 Make sure you have the following installed on your machine:
-- The backend API service, [friends-management-service](#), should be set up and running.
+- The backend API service, [friend-management-service](https://github.com/nrlheni/friend-management-service), should be set up and running.
 
 ## Getting Started
 
